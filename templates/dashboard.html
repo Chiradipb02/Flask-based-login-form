@@ -20,6 +20,91 @@
         <li>Name: {{user[1]}}</li>
         <li>Email: {{user[2]}}</li>
     </ul>
+    <br>
+    {%with messages =get_flashed_messages() %}
+        {%if messages%}
+            <div class="alert alert-danger">
+                <ul>
+                    {%for message in messages%}
+                        <li>{{message}}</li>
+                    {%endfor%}
+                </ul>
+            </div>
+        {%endif%}
+    {%endwith%}
+    
+    <br>
+    <h2>IRIS DATASET CLASSIFICATION MODEL</h2>
+    <br>
+    <form action="" method="post"><!--the action sends the form data to its param link-->
+    {{form.hidden_tag()}}
+    <div>
+        {{form.sepal_length.label}}<!--the string name of the option-->
+        {{form.sepal_length}}<!--the box of the option-->
+
+        <!--Now if any error is present we need to display them to the user-->
+        {%if form.sepal_length.errors%}
+        {%for error in form.sepal_length.errors%}<!--iterate over the errors-->
+            <div>{{error}}</div>
+        {%endfor%}
+        {%endif%}
+    </div>
+    <br>
+
+    <div>
+        {{form.sepal_width.label}}<!--the string name of the option-->
+        {{form.sepal_width}}<!--the box of the option-->
+
+        <!--Now if any error is present we need to display them to the user-->
+        {%if form.sepal_width.errors%}
+        {%for error in form.sepal_width.errors%}<!--iterate over the errors-->
+            <div>{{error}}</div>
+        {%endfor%}
+        {%endif%}
+    </div>
+    <br>
+
+    <div>
+        {{form.petal_length.label}}<!--the string name of the option-->
+        {{form.petal_length}}<!--the box of the option-->
+
+        <!--Now if any error is present we need to display them to the user-->
+        {%if form.petal_length.errors%}
+        {%for error in form.petal_length.errors%}<!--iterate over the errors-->
+            <div>{{error}}</div>
+        {%endfor%}
+        {%endif%}
+    </div>
+    <br>
+
+    <div>
+        {{form.petal_width.label}}<!--the string name of the option-->
+        {{form.petal_width}}<!--the box of the option-->
+
+        <!--Now if any error is present we need to display them to the user-->
+        {%if form.petal_width.errors%}
+        {%for error in form.petal_width.errors%}<!--iterate over the errors-->
+            <div>{{error}}</div>
+        {%endfor%}
+        {%endif%}
+    </div>
+    <br>
+
+    
+    <div><!--always use the single quotes for jinja urls like this-->
+        {{form.submit}}
+    </div>
+    <br>
+
+    <div>
+      {%if output%}
+        {{output}}
+      {%endif%}
+    </div>
+    <br>
+    
+</form>
+
     <a href="/logout" class="btn btn-dark">Logout</a>
   {%endif%}
 </div>
