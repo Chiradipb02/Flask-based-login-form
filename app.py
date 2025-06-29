@@ -1,9 +1,13 @@
 from flask import Flask,render_template,redirect,url_for,session,flash
 from flask_wtf import FlaskForm
-from wtforms import StringField,PasswordField,SubmitField
-from wtforms.validators import DataRequired,ValidationError,Email
+from wtforms import StringField,PasswordField,SubmitField,FloatField
+from wtforms.validators import DataRequired,ValidationError,Email,InputRequired
 import bcrypt
 from flask_mysqldb import MySQL
+from flask import request
+import pandas as pd
+import numpy as np
+import joblib
 
 app=Flask(__name__)
 #mysql_config
@@ -14,6 +18,7 @@ app.config['MYSQL_DB']='mydatabase'
 app.secret_key='the_secret_key'
 
 mysql=MySQL(app)
+model=joblib.load("best_random_forest_model.joblib")
 
 class RegisterForm(FlaskForm):
     name=StringField("Name: ",validators=[DataRequired()])
@@ -36,6 +41,14 @@ class LoginForm(FlaskForm):
     email=StringField("Email: ",validators=[DataRequired(),Email()])
     password=PasswordField("Password: ",validators=[DataRequired()])
     submit=SubmitField("Login")
+
+class InputForm(FlaskForm):
+
+    sepal_length = FloatField('Sepal Length (cm)', validators=[InputRequired()])
+    sepal_width = FloatField('Sepal Width (cm)', validators=[InputRequired()])
+    petal_length = FloatField('Petal Length (cm)', validators=[InputRequired()])
+    petal_width = FloatField('Petal Width (cm)', validators=[InputRequired()])
+    submit = SubmitField('Predict')
 
 @app.route('/')
 def index():
@@ -85,7 +98,7 @@ def register():
     
     return render_template('register.html',form=form)
 
-@app.route('/dashboard')
+@app.route('/dashboard',methods=['GET','POST'])
 def dashboard():
     if 'user_id' in session:
         user_id=session['user_id']
@@ -94,9 +107,32 @@ def dashboard():
         user =cursor.fetchone()
         cursor.close()
 
-        if user:
-            return render_template('dashboard.html',user=user)
-    
+        if user:#let the user use the ML model
+            form =InputForm()
+            pred=None
+            if form.validate_on_submit():
+                x_new=np.array(pd.DataFrame({
+                    "SepalLengthCm":[form.sepal_length.data],
+                    "SepalWidthCm":[form.sepal_width.data],
+                    "PetalLengthCm":[form.petal_length.data],
+                    "PetalWidthCm":[form.petal_width.data]
+                }))
+
+                pred=model.predict(x_new).item()
+                classes=['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
+                for i in range(len(classes)):
+                    if pred==i:
+                        pred=classes[i]
+                        message=f"the predicted class: {pred}"
+                        break
+                return render_template('dashboard.html',user=user,form=form,output=message)
+            
+            elif request.method == 'POST':
+                flash("Please provide valid feature values.")
+            
+            return render_template('dashboard.html',user=user,form=form)
+        
+    #flash("No registered user found")
     return redirect(url_for("login"))
 
 @app.route('/logout')
